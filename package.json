@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@firebase/firestore-types": "^2.3.0"
+  }
+}

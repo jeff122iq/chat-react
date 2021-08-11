@@ -3,7 +3,7 @@ import "../styles/container.css"
 
 const Container: FC = ({children}) => {
     return (
-        <div className="container mt-lg-5">
+        <div className="container mx-lg-5">
             {children}
         </div>
     );
