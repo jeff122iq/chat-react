@@ -1,32 +1,27 @@
-import React, {ChangeEvent, ChangeEventHandler, FC, useCallback, useContext, useState} from "react";
+import React, {ChangeEvent, FC, useContext, useEffect, useState} from "react";
 import Page from "./Page";
 import {Context} from "../index";
 import {useAuthState} from "react-firebase-hooks/auth";
 import "../styles/chat-content.css"
-import {useCollectionData} from "react-firebase-hooks/firestore";
 import firebase from "firebase";
-import Loader from "./Loader";
+import {IDocumentData} from "../types";
 
 const Chat: FC = () => {
     const {auth, firestore} = useContext(Context)
     const [user] = useAuthState(auth)
     const [value, setValue] = useState<string>("")
+    const [messages, setMessages] = useState<IDocumentData[]>([])
 
-    // const [messages, loading] = useCollectionData(
-    //     firestore.collection("messages").orderBy('createdAd')
-    // )
-    // if (loading) {
-    //     return <Loader/>
-    // }
-
-    const messages = firestore.collection('messages').get()
-        .then(
-            querySnapshot => {
-                querySnapshot.docs.map(doc => {
-                    console.log('LOG 1', doc.data());
-                })});
-
-    console.log(Object.keys(messages));
+    useEffect(() => {
+        firestore.collection('messages').get()
+            .then(
+                querySnapshot => {
+                    const message = querySnapshot.docs.map((item) => {
+                        return item.data()
+                    });
+                    setMessages(message as IDocumentData[])
+                });
+    }, [])
 
     const sendMessage = async (e: any) => {
         e.preventDefault()
@@ -40,21 +35,39 @@ const Chat: FC = () => {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 }
             )
+            firestore.collection('messages').get({source: 'default'})
+                .then(
+                    querySnapshot => {
+                        const message = querySnapshot.docs.map((item) => {
+                            return item.data()
+                        });
+                        setMessages(message as IDocumentData[])
+                    });
         }
         setValue("")
     }
+
     return (
         <Page>
             <div className="chat-content container d-flex flex-column">
-                <div className="chat">
-                    {/*{Object.keys(messages.map(message =>*/}
-                    {/*        <div className="container d-flex direction-column">*/}
-                    {/*            <p>{messages.displayName}</p>*/}
-                    {/*            <div className="message">*/}
-                    {/*                {messages.text}*/}
-                    {/*            </div>*/}
-                    {/*        </div>*/}
-                    {/*))}*/}
+                <div className="chat overflow-auto">
+                    {
+                        messages.map((item, idx) => {
+                            return (
+                                <div className="container d-flex flex-column my-4" key={idx}>
+                                    <div className="container d-flex p-0">
+                                        <div className="user-image">
+                                            <img src={item.photoUrl} alt=""/>
+                                        </div>
+                                        <p>{item.displayName}</p>
+                                    </div>
+                                    <div className="message">
+                                        {item.text}
+                                    </div>
+                                </div>
+                            )
+                        })
+                    }
                 </div>
                 <nav className="navbar navbar-expand-lg navbar-light bg-light">
                     <div className="w-100">

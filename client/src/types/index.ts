@@ -12,5 +12,5 @@ export interface IDocumentData {
     displayName: any,
     photoUrl: any,
     text: any,
-    createdAt: () => any
+    createdAt: any
 }
